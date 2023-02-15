@@ -15,7 +15,15 @@ public class Cliente {
     @Column(name = "forma_pago") // como en la tabla lo tenemos con _ le tenemos que pasar el nombre que tenemos en la tabla de la base de datos
     private String formaPago;
 
+    // cuando tenemos un constructor que recive parametros siempre tenemos que tener un constructor vacio
     public Cliente() {
+    }
+
+    // aca pasamos un contructor con estos dos parametros para pasarlo a la consulta
+    // que puebal y devuelve un objeto de una clase personalizada
+    public Cliente(String nombre, String apellido) {
+        this.nombre = nombre;
+        this.apellido = apellido;
     }
 
     public Cliente(Long id, String nombre, String apellido, String formaPago) {
