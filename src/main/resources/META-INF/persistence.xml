@@ -14,8 +14,19 @@
             <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL8Dialect"/>
             <property name="hibernate.show_sql" value="true"/>
+            <!--una caracteristica que tiene jpa para poder crear la tabla de forma automatica,
+            todo lo que es la geracion de esquema(scheme), apartir de la clase entity, apartir de la base de anotaciones
+            NOTA : esto de crear la tabla de forma automatica es solamente para desarrollar y para pruebas no es para
+            produccion, porque si estamos producciendo y reiniciamos el servidor y se levanta  denuevo la aplicacion
+            va a eliminar todas las tablas y va a ser un desastre, esto solamente para probar unos datos para
+            desarrollar, para no tener que estar creando nustras tablas de forma manual.
+             en el archivo de persistence.xml pasamos esta configuracion -> <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
+             en mysql workbech en la parte de administracion seleccionamos la base de datos y la tabla  despues la exportamos -->
+            <property name="jakarta.persistence.schema-generation.database.action" value="drop-and-create"/>
 
         </properties>
     </persistence-unit>
 </persistence>
+
+
 

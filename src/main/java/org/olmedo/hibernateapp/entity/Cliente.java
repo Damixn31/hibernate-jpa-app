@@ -2,6 +2,8 @@ package org.olmedo.hibernateapp.entity;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Table(name="clientes")
 public class Cliente {
@@ -14,6 +16,11 @@ public class Cliente {
 
     @Column(name = "forma_pago") // como en la tabla lo tenemos con _ le tenemos que pasar el nombre que tenemos en la tabla de la base de datos
     private String formaPago;
+
+    // todo lo que contenga esta clase, atributos son tambien parte de esta clase entity
+    @Embedded
+    private Auditoria audit = new Auditoria(); // simpre es importante crear la instancia con el newAuditoria para usarla
+
 
     // cuando tenemos un constructor que recive parametros siempre tenemos que tener un constructor vacio
     public Cliente() {
@@ -32,6 +39,7 @@ public class Cliente {
         this.apellido = apellido;
         this.formaPago = formaPago;
     }
+
 
     public Long getId() {
         return id;
@@ -65,11 +73,18 @@ public class Cliente {
         this.formaPago = formaPago;
     }
 
+
     @Override
     public String toString() {
+        /* cuando generamos una consulta preguntamos si la tiene fecha null, para que no nos tire error, como teniamos
+        en la base de datos Clientes con el creado y editado en null nos lanzaba un error*/
+        LocalDateTime creado = this.audit != null ? audit.getCreadoEn() : null;
+        LocalDateTime editado = this.audit != null ? audit.getEditadoEn() : null;
         return "id=" + id +
                 ", nombre='" + nombre + '\'' +
                 ", apellido='" + apellido + '\'' +
-                ", formaPago='" + formaPago;
+                ", formaPago='" + formaPago + '\'' +
+                ", creadoEn='" + creado + '\'' +
+                ", editadoEn='" + editado + '\'';
     }
 }
