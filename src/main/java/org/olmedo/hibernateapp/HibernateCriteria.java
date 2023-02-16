@@ -7,6 +7,7 @@ import org.olmedo.hibernateapp.util.JpaUtil;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 public class HibernateCriteria {
     public static void main(String[] args) {
@@ -100,6 +101,145 @@ public class HibernateCriteria {
         clientes = em.createQuery(query).getResultList();
         clientes.forEach(System.out::println);
 
+        System.out.println("====== Consulta order by asc desc ==========");
+
+        query = criteria.createQuery(Cliente.class);
+        from = query.from(Cliente.class);
+        // tambien se puede convinar con el where con filtro con todo lo que queramos
+        query.select(from).orderBy(criteria.desc(from.get("nombre")), criteria.asc(from.get("apellido")));
+        clientes = em.createQuery(query).getResultList();
+        clientes.forEach(System.out::println);
+
+        System.out.println("================= Consulta por id ==================");
+        query = criteria.createQuery(Cliente.class);
+        from = query.from(Cliente.class);
+        ParameterExpression<Long> idParam = criteria.parameter(Long.class, "id");
+
+        query.select(from).where(criteria.equal(from.get("id"), idParam));
+
+        Cliente cliente = em.createQuery(query)
+                .setParameter("id", 1L)
+                .getSingleResult();
+        System.out.println(cliente);
+
+
+        System.out.println("=================== Consulta solo el nombre de los clientes ==============");
+
+        CriteriaQuery<String> queryString = criteria.createQuery(String.class);
+        // importante que sea queryString y no query porque vamos a usar a un nuevo
+        from = queryString.from(Cliente.class);
+        //dentro del from solo vamos a obtener el nombre del cliente porque con from obtenmos todo el objeto completo entonces le pasamos solo el nombre solamente
+        queryString.select(from.get("nombre"));
+        List<String> nombres = em.createQuery(queryString).getResultList();
+        nombres.forEach(System.out::println);
+
+        System.out.println("=================== Consulta solo el nombre de los clientes unicos que no se repitan con distinct ==============");
+
+        queryString = criteria.createQuery(String.class);
+        from = queryString.from(Cliente.class);
+        queryString.select(criteria.upper(from.get("nombre"))).distinct(true);
+        nombres = em.createQuery(queryString).getResultList();
+        nombres.forEach(System.out::println);
+
+        System.out.println("=================== Consulta por nombre y apellidos concatenados ================");
+
+        queryString = criteria.createQuery(String.class);
+        from = queryString.from(Cliente.class);
+        queryString.select(criteria.concat(criteria.concat(from.get("nombre"), " "), from.get("apellido")));
+        nombres = em.createQuery(queryString).getResultList();
+        nombres.forEach(System.out::println);
+
+
+        System.out.println("=================== Consulta por nombre y apellidos concatenados upper o lower ================");
+
+        queryString = criteria.createQuery(String.class);
+        from = queryString.from(Cliente.class);
+        queryString.select(criteria.upper(criteria.concat(criteria.concat(from.get("nombre"), " "), from.get("apellido"))));
+        nombres = em.createQuery(queryString).getResultList();
+        nombres.forEach(System.out::println);
+
+        System.out.println("================ Consulta de campos personalizados del entity cliente ==================");
+        CriteriaQuery<Object[]> queryObject = criteria.createQuery(Object[].class);
+        from = queryObject.from(Cliente.class);
+        queryObject.multiselect(from.get("id"), from.get("nombre"), from.get("apellido"));
+        List<Object[]> registros = em.createQuery(queryObject).getResultList();
+        registros.forEach(reg -> {
+            Long id = (Long) reg[0];
+            String nombre = (String) reg[1];
+            String apellido = (String) reg[2];
+            System.out.println("id= " + id + ", nombre= " + nombre + ", apellido= " + apellido);
+        });
+
+        System.out.println("================ Consulta de campos personalizados del entity cliente con where ==================");
+        queryObject = criteria.createQuery(Object[].class);
+        from = queryObject.from(Cliente.class);
+        // con el where esta filtrando solos que que concidan con lu
+        queryObject.multiselect(from.get("id"), from.get("nombre"), from.get("apellido")).where(criteria.like(from.get("nombre"), "%lu%"));
+        registros = em.createQuery(queryObject).getResultList();
+        registros.forEach(reg -> {
+            Long id = (Long) reg[0];
+            String nombre = (String) reg[1];
+            String apellido = (String) reg[2];
+            System.out.println("id= " + id + ", nombre= " + nombre + ", apellido= " + apellido);
+        });
+
+
+        System.out.println("================ Consulta de campos personalizados del entity cliente con where id ==================");
+        queryObject = criteria.createQuery(Object[].class);
+        from = queryObject.from(Cliente.class);
+        queryObject.multiselect(from.get("id"), from.get("nombre"), from.get("apellido")).where(criteria.equal(from.get("id"), 2L));
+        Object[] registro = em.createQuery(queryObject).getSingleResult();
+
+        Long id = (Long) registro[0];
+        String nombre = (String) registro[1];
+        String apellido = (String) registro[2];
+        System.out.println("id= " + id + ", nombre= " + nombre + ", apellido= " + apellido);
+
+
+        System.out.println("=========== Contar registros de la consulta con count ============= ");
+        CriteriaQuery<Long> queryLong = criteria.createQuery(Long.class);
+        from = queryLong.from(Cliente.class);
+        queryLong.select(criteria.count(from.get("id")));
+        Long count = em.createQuery(queryLong).getSingleResult();
+        System.out.println(count);
+
+        System.out.println("========== Sumar datos de algun campo de la tabla ==========");
+        queryLong = criteria.createQuery(Long.class);
+        from = queryLong.from(Cliente.class);
+        queryLong.select(criteria.sum(from.get("id")));
+        Long sum = em.createQuery(queryLong).getSingleResult();
+        System.out.println(sum);
+
+        System.out.println("======== Consultar con el maximo id =======");
+        queryLong = criteria.createQuery(Long.class);
+        from = queryLong.from(Cliente.class);
+        queryLong.select(criteria.max(from.get("id")));
+        Long max = em.createQuery(queryLong).getSingleResult();
+        System.out.println(max);
+
+        System.out.println("======== Consultar con el minimo id =======");
+        queryLong = criteria.createQuery(Long.class);
+        from = queryLong.from(Cliente.class);
+        queryLong.select(criteria.min(from.get("id")));
+        Long min = em.createQuery(queryLong).getSingleResult();
+        System.out.println(min);
+
+
+        System.out.println("========== Ejemplo varios resultados de funciones de agregacion en una sola consulta ======");
+        queryObject = criteria.createQuery(Object[].class);
+        from = queryObject.from(Cliente.class);
+        queryObject.multiselect(criteria.count(from.get("id"))
+                , criteria.sum(from.get("id"))
+                , criteria.max(from.get("id"))
+                , criteria.min(from.get("id")));
+
+        registro = em.createQuery(queryObject).getSingleResult();
+        count = (Long) registro[0];
+        sum = (Long) registro[1];
+        max = (Long) registro[2];
+        min = (Long) registro[3];
+
+        System.out.println("count= " + count + ", sum= " + sum + ", max= " + max + ", min= " + min);
 
 
         em.close();
